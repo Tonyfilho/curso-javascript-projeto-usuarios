@@ -15,18 +15,40 @@ class UserController {
     this.onSubmit();
   }
 
-  //Metodo de SUBMETER o Formulario, Pego o ID do Formulario e Atuo no BOTÂO
+  //***********************************************Metodo de SUBMETER o Formulario, Pego o ID do Formulario e Atuo no BOTÂO
   onSubmit() {
     let user;
     this.formEL.addEventListener("submit", (event) => {
         event.preventDefault(); //mudando o comportamento do Formulario para Não atualizar
         //atribuindo os valores para uma Var
       user = this.getValues();
-      this.addLine(user) //poderiamos remover esta VAR User, pois ´so é usada 1 vez.
+      user.photo = ''; //sobre Escrevendo o Objeto fotos
+      this.getPhoto((photo) => {user.photo = photo
+        this.addLine(user);    
+    });
       });
   }
+ //*********************************************Metodo para leitura de Arquivos vindo do PC, neste caso FOTOS, temos que passar um função de callback
+  getPhoto(callback) {
+      const fileReader = new FileReader();
+      /**Pegando o campo da foto usando Spread e filter e ternario */
+      let elementPhoto;
+      let photoFile;
+      [... this.formEL.elements].filter(element => { element.name == 'photo' ? elementPhoto = element: null });
+      /**Pegando a Foto no Input e pondo em uma Var, Lembrando que Files é um Array de fotos, onde queremos o indice 0 */
+      photoFile =  elementPhoto.files[0];      
+      /**Tem que ter um ONLOAD q retorna uma FUNCÃO 
+       * o OnLoad, só é acdionando quando o readAsDataURL terninar de ler o arquivo e chamamos o Result
+      */
+      fileReader.onload = () => {
+            callback(fileReader.result);// retornarei um função de callBack com parametro na linha 27
+      };
+      /**Tem que READASDATAURL recebe uma foto para transformar em Base64 e por mo SRC */
+      fileReader.readAsDataURL(photoFile);
+  }
 
-  //Metodo de pegar os valor para formulario e criar um Objeto User
+
+  //***************************************************Metodo de pegar os valor para formulario e criar um Objeto User
   getValues() {
     let user = {};
     //usando Spread para Ler uma ELEMENTO Html [...this.blabla]
@@ -62,7 +84,7 @@ class UserController {
    this.tableEL.innerHTML = `   <tr>
     <td>
       <img
-        src="dist/img/user1-128x128.jpg"
+        src="${dataUser.photo}"
         alt="User Image"
         class="img-circle img-sm"
       />
