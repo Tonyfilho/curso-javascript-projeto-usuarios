@@ -21,6 +21,10 @@ class UserController {
     this.formEL.addEventListener("submit", (event) => {
       event.preventDefault(); //mudando o comportamento do Formulario para Não atualizar
       //atribuindo os valores para uma Var
+     //Pegando o botão do formulario para
+    const btn = this.formEL.querySelector('[type=submit]');
+    btn.disabled = true;
+
       user = this.getValues();
       user.photo = ""; //sobre Escrevendo o Objeto fotos
       //   this.getPhoto((photo) => {user.photo = photo
@@ -30,6 +34,8 @@ class UserController {
         (resultPhoto) => {
           user.photo = resultPhoto;
           this.addLine(user);
+          this.formEL.reset(); 
+          btn.disabled = false;
         },
         (rejectErro) => {
           console.error(rejectErro);
@@ -91,10 +97,19 @@ class UserController {
   //***************************************************Metodo de pegar os valor para formulario e criar um Objeto User
   getValues() {
     let user = {};
+    let isValid = true;
     //usando Spread para Ler uma ELEMENTO Html [...this.blabla]
     [...this.formEL.elements].forEach((field) => {
-      /*Criando o Objeto User
+      /*Criando o Objeto User form-control is-invalid
             O Gender é um SELECT, temos que checar quais as opcoes escolhidas*/
+
+      if (['name', 'password', 'email'].indexOf(field.name) > -1 && !field.value) {
+        /**Para adcionar o erro, tenho q pegar o ELEMENTO PAI e adcionar uma class aqui dentro for */
+        field.parentElement.classList.add('has-error');
+        isValid = false;
+
+        
+      }      
       if (field.name === "gender") {
         if (field.checked) {
           user[field.name] = field.value;
@@ -105,6 +120,10 @@ class UserController {
         user[field.name] = field.value;
       }
     });
+
+     if (!isValid) {
+       return false;// parando o envio do formulario caso haja campos com erros
+     }
     return new User(
       user.name,
       user.gender,
