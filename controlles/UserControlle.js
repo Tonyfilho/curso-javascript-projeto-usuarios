@@ -136,7 +136,7 @@ class UserController {
     <td>${dataUser.name}</td>
     <td>${dataUser.email}</td>
     <td>${(dataUser.admin) ? 'Yes' : 'No'}</td>
-    <td>${dataUser.register }</td>
+    <td>${Utils.dateFormat(dataUser.register) }</td>
     <td>
       <button
         type="button"
