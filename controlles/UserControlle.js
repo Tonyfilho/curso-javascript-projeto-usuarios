@@ -13,6 +13,15 @@ class UserController {
 
     this.tableEL = document.getElementById(tableUserId);
     this.onSubmit();
+    this.onEdit();
+  }
+  //***********************************************Metodo de onEditeCancel() esconde o FOrm de Editar e mostra o de Salvar
+  onEdit() {
+    document
+      .querySelector("#box-user-update .btn-cancel")
+      .addEventListener("click", (e) => {        
+        this.showPanelCreate();
+      });
   }
 
   //***********************************************Metodo de SUBMETER o Formulario, Pego o ID do Formulario e Atuo no BOTÂO
@@ -143,7 +152,7 @@ class UserController {
   /* Metodo q  adciona USUÁRIOS na TABLE exibida */
   addLine(dataUser) {
     const tr = document.createElement("tr");
-    tr.dataset.user = JSON.stringify(dataUser);  //criando um DataSet para ter acesso ao numero de admin
+    tr.dataset.user = JSON.stringify(dataUser); //criando um DataSet para ter acesso ao numero de admin
     // Mandando para TBody
     /**Pega o ID #"table-users" da tabela para mandar as  informações via AppendChild() */
     /*InnerHTML fala p/ JS que este texto ´Não é uma STRING e sim um comando HTML, 
@@ -164,7 +173,7 @@ class UserController {
     <td>
       <button
         type="button"
-        class="btn btn-primary btn-xs btn-flat"
+        class="btn btn-primary btn-edit btn-xs btn-flat"
       >
         Editar
       </button>
@@ -176,28 +185,42 @@ class UserController {
       </button>
     </td>
   `;
+    /**Pegando o Botão Edite pela class */
+    let editUser;
+    tr.querySelector(".btn-edit").addEventListener("click", (e) => {
+      editUser = JSON.parse(tr.dataset.user);
+      this.showPanelUpdate();
+    });
     /** AppendChild adciona o Element TR na tabela */
     this.tableEL.appendChild(tr);
     this.updateCount();
   }
+
+  /**Pegando o Botão Edite os Style da div */
+  showPanelCreate() {
+    document.querySelector("#box-user-create").style.display = "block";
+    document.querySelector("#box-user-update").style.display = "none";
+  }
+  /**Pegando o Botão Edite os Style da div */
+  showPanelUpdate() {
+    document.querySelector("#box-user-create").style.display = "none";
+    document.querySelector("#box-user-update").style.display = "block";
+  }
+
   updateCount() {
     let numberUser = 0;
     let numberAdmin = 0;
 
-    [...this.tableEL.children].forEach(tr => {
-
+    [...this.tableEL.children].forEach((tr) => {
       numberUser++; //Adcionando numero de User
       //JSON.parse() transforma uma string em JSON
-      let userAdmin = JSON.parse(tr.dataset.user)
+      let userAdmin = JSON.parse(tr.dataset.user);
       if (userAdmin._admin) {
         numberAdmin++;
-        
-         console.log(numberAdmin);   
-      }   
-      
-      });
-      //Mandando o valor para templates, usando querySelector e o InnerHtml
-      document.querySelector('#number-users').innerHTML = numberUser;
-      document.querySelector('#number-users-admin').innerHTML = numberAdmin;
+      }
+    });
+    //Mandando o valor para templates, usando querySelector e o InnerHtml
+    document.querySelector("#number-users").innerHTML = numberUser;
+    document.querySelector("#number-users-admin").innerHTML = numberAdmin;
   }
 } // end class
