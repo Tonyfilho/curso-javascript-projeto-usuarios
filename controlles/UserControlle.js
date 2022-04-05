@@ -21,11 +21,14 @@ class UserController {
     this.formEL.addEventListener("submit", (event) => {
       event.preventDefault(); //mudando o comportamento do Formulario para Não atualizar
       //atribuindo os valores para uma Var
-     //Pegando o botão do formulario para
-    const btn = this.formEL.querySelector('[type=submit]');
-    btn.disabled = true;
+      //Pegando o botão do formulario para
+      const btn = this.formEL.querySelector("[type=submit]");
+      btn.disabled = true;
 
       user = this.getValues();
+      if (!user) {
+        return false;
+      }
       user.photo = ""; //sobre Escrevendo o Objeto fotos
       //   this.getPhoto((photo) => {user.photo = photo
       //     this.addLine(user);
@@ -34,7 +37,7 @@ class UserController {
         (resultPhoto) => {
           user.photo = resultPhoto;
           this.addLine(user);
-          this.formEL.reset(); 
+          this.formEL.reset();
           btn.disabled = false;
         },
         (rejectErro) => {
@@ -103,13 +106,14 @@ class UserController {
       /*Criando o Objeto User form-control is-invalid
             O Gender é um SELECT, temos que checar quais as opcoes escolhidas*/
 
-      if (['name', 'password', 'email'].indexOf(field.name) > -1 && !field.value) {
+      if (
+        ["name", "password", "email"].indexOf(field.name) > -1 &&
+        !field.value
+      ) {
         /**Para adcionar o erro, tenho q pegar o ELEMENTO PAI e adcionar uma class aqui dentro for */
-        field.parentElement.classList.add('has-error');
+        field.parentElement.classList.add("has-error");
         isValid = false;
-
-        
-      }      
+      }
       if (field.name === "gender") {
         if (field.checked) {
           user[field.name] = field.value;
@@ -121,9 +125,9 @@ class UserController {
       }
     });
 
-     if (!isValid) {
-       return false;// parando o envio do formulario caso haja campos com erros
-     }
+    if (!isValid) {
+      return false; // parando o envio do formulario caso haja campos com erros
+    }
     return new User(
       user.name,
       user.gender,
@@ -139,6 +143,7 @@ class UserController {
   /* Metodo q  adciona USUÁRIOS na TABLE exibida */
   addLine(dataUser) {
     const tr = document.createElement("tr");
+    tr.dataset.user = JSON.stringify(dataUser);  //criando um DataSet para ter acesso ao numero de admin
     // Mandando para TBody
     /**Pega o ID #"table-users" da tabela para mandar as  informações via AppendChild() */
     /*InnerHTML fala p/ JS que este texto ´Não é uma STRING e sim um comando HTML, 
@@ -154,8 +159,8 @@ class UserController {
     </td>
     <td>${dataUser.name}</td>
     <td>${dataUser.email}</td>
-    <td>${(dataUser.admin) ? 'Yes' : 'No'}</td>
-    <td>${Utils.dateFormat(dataUser.register) }</td>
+    <td>${dataUser.admin ? "Yes" : "No"}</td>
+    <td>${Utils.dateFormat(dataUser.register)}</td>
     <td>
       <button
         type="button"
@@ -171,7 +176,28 @@ class UserController {
       </button>
     </td>
   `;
-  /** AppendChild adciona o Element TR na tabela */
-  this.tableEL.appendChild(tr);
+    /** AppendChild adciona o Element TR na tabela */
+    this.tableEL.appendChild(tr);
+    this.updateCount();
+  }
+  updateCount() {
+    let numberUser = 0;
+    let numberAdmin = 0;
+
+    [...this.tableEL.children].forEach(tr => {
+
+      numberUser++; //Adcionando numero de User
+      //JSON.parse() transforma uma string em JSON
+      let userAdmin = JSON.parse(tr.dataset.user)
+      if (userAdmin._admin) {
+        numberAdmin++;
+        
+         console.log(numberAdmin);   
+      }   
+      
+      });
+      //Mandando o valor para templates, usando querySelector e o InnerHtml
+      document.querySelector('#number-users').innerHTML = numberUser;
+      document.querySelector('#number-users-admin').innerHTML = numberAdmin;
   }
 } // end class
