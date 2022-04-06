@@ -19,7 +19,7 @@ class UserController {
   onEdit() {
     document
       .querySelector("#box-user-update .btn-cancel")
-      .addEventListener("click", (e) => {        
+      .addEventListener("click", (e) => {
         this.showPanelCreate();
       });
   }
@@ -186,9 +186,29 @@ class UserController {
     </td>
   `;
     /**Pegando o Botão Edite pela class */
-    let editUser;
+    let jSon;
+    let formUpdate;
     tr.querySelector(".btn-edit").addEventListener("click", (e) => {
-      editUser = JSON.parse(tr.dataset.user);
+      jSon = JSON.parse(tr.dataset.user);
+      formUpdate = document.querySelector("#form-user-update");
+      // console.log('editeUser ', jSon);
+      //  [...jSon].map(d => console.log('spread',d));
+      // from(jSon).map(d => { console.log('from',d._name)})
+      for (const key in jSon) {
+        if (Object.hasOwnProperty.call(jSon, key)) {
+          // const element = jSon[key];
+         let field = formUpdate.querySelector("[name=" + key.replace("_", "")+"]");
+         if (field) {
+           if (field.type === "file") {
+             continue;
+           }
+           field.value = jSon[key];
+           
+         }
+         
+         
+        }
+      }
       this.showPanelUpdate();
     });
     /** AppendChild adciona o Element TR na tabela */
