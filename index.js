@@ -2,7 +2,7 @@
 //Criando o Objeto e pegando todos os campos do formulario
 //var fieldForm = document.querySelectorAll("#form-user-create [name]");
 
-const userController = new UserController('form-user-create', 'table-users');
+const userController = new UserController('form-user-create','form-user-update', 'table-users');
 
 
 

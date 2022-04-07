@@ -1,11 +1,14 @@
 class UserController {
-  formEL; // é um HTMLElement
+  formEL; // é um HTMLElement para Formulario ADD
+  formUpdateEL; // é o HTMLElemento para Formulario de UPDATE
   tableEL = []; // é um HTMLElement
 
   // Aqui no Controler vou receber o ID do CSS para pegar o Formulario
-  constructor(formId, tableUserId) {
+  constructor(formIdCreate, formIdUpdate, tableUserId) {
     //guardando o formulario em uma Variable
-    this.formEL = document.getElementById(formId);
+    this.formEL = document.getElementById(formIdCreate);
+    this.formUpdateEL = document.getElementById(formIdUpdate);
+
     /* OBS: Coleções HTML ou Elementos não aceitam usar o ForEach, temos que usar o SPREAD ou Object.entries
     Object.entries(this.formEL.elements).map(d => console.log(d[1])) ou
     [...this.formEL.elements].forEach    
@@ -22,6 +25,49 @@ class UserController {
       .addEventListener("click", (e) => {
         this.showPanelCreate();
       });
+
+    //acessando formulario de update Igual ao onSubmit()
+    this.formUpdateEL.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const btn = this.formUpdateEL.querySelector("[type=submit]");
+      btn.disabled = true;
+      let valueUserUpdate = this.getValues(this.formUpdateEL);
+      // console.log('Teste ValueUserUpdate ',valueUserUpdate);
+      //**Passando o Index da TD capturada na tr.dataset.trIndex para.. e passando para TR da tabela na linha 38*/
+      let index = this.formUpdateEL.dataset.trIndex;
+      let tr = this.tableEL.rows[index];
+      tr.dataset.user = JSON.stringify(valueUserUpdate);
+      /**Mudando a TR com os valores Add para Update, usando InnerHTML */
+      tr.innerHTML = ` 
+     <td>
+       <img
+         src="${valueUserUpdate.photo}"
+         alt="User Image"
+         class="img-circle img-sm"
+       />
+     </td>
+     <td>${valueUserUpdate.name}</td>
+     <td>${valueUserUpdate.email}</td>
+     <td>${valueUserUpdate.admin ? "Yes" : "No"}</td>
+     <td>${Utils.dateFormat(valueUserUpdate.register)}</td>
+     <td>
+       <button
+         type="button"
+         class="btn btn-primary btn-edit btn-xs btn-flat"
+       >
+         Editar
+       </button>
+       <button
+         type="button"
+         class="btn btn-danger btn-xs btn-flat"
+       >
+         Excluir
+       </button>
+     </td>
+   `;
+   this.addEventsTR(tr);
+   this.updateCount();
+    });
   }
 
   //***********************************************Metodo de SUBMETER o Formulario, Pego o ID do Formulario e Atuo no BOTÂO
@@ -34,7 +80,7 @@ class UserController {
       const btn = this.formEL.querySelector("[type=submit]");
       btn.disabled = true;
 
-      user = this.getValues();
+      user = this.getValues(this.formEL);
       if (!user) {
         return false;
       }
@@ -107,11 +153,11 @@ class UserController {
   }
 
   //***************************************************Metodo de pegar os valor para formulario e criar um Objeto User
-  getValues() {
+  getValues(formEL) {
     let user = {};
     let isValid = true;
     //usando Spread para Ler uma ELEMENTO Html [...this.blabla]
-    [...this.formEL.elements].forEach((field) => {
+    [...formEL.elements].forEach((field) => {
       /*Criando o Objeto User form-control is-invalid
             O Gender é um SELECT, temos que checar quais as opcoes escolhidas*/
 
@@ -185,47 +231,56 @@ class UserController {
       </button>
     </td>
   `;
-    /**Pegando o Botão Edite pela class */
-    let jSon;
-    let formUpdate;
-    tr.querySelector(".btn-edit").addEventListener("click", (e) => {
-      jSon = JSON.parse(tr.dataset.user);
-      formUpdate = document.querySelector("#form-user-update");
-
-      for (const key in jSon) {
-        if (Object.hasOwnProperty.call(jSon, key)) {
-          // const element = jSon[key];
-          let field = formUpdate.querySelector(
-            "[name=" + key.replace("_", "") + "]"
-          );
-          if (field) {
-            switch (field.type) {
-              case "file":
-                continue;
-                break;
-              case "radio":
-                // se for Radio button, pego o Value pelo nome selecionado, e adciono TRUE
-                field = formUpdate.querySelector(
-                  "[name=" + key.replace("_", "") + "][value=" + jSon[key] + "]"
-                );
-                field.checked = true;
-                break;
-              case "checkbox":
-                 field.checked = jSon[key];
-              break;
-              default: 
-              field.value = jSon[key];
-
-            }
-          }
-        }
-      }
-      this.showPanelUpdate();
-    });
+    this.addEventsTR(tr);
     /** AppendChild adciona o Element TR na tabela */
     this.tableEL.appendChild(tr);
     this.updateCount();
   }
+ /**************************Evento da TR************************ */
+ addEventsTR(tr) {
+  /**Pegando o Botão Edite pela class */
+  let jSon;
+  let formUpdate;
+  tr.querySelector(".btn-edit").addEventListener("click", (e) => {
+    jSon = JSON.parse(tr.dataset.user);
+    formUpdate = document.querySelector("#form-user-update");
+    /**Pegando Index da ROW da TR no momento do click */
+    formUpdate.dataset.trIndex =  tr.sectionRowIndex
+
+    for (const key in jSon) {
+      if (Object.hasOwnProperty.call(jSon, key)) {
+        // const element = jSon[key];
+        let field = formUpdate.querySelector(
+          "[name=" + key.replace("_", "") + "]"
+        );
+        if (field) {
+          switch (field.type) {
+            case "file":
+              continue;
+              break;
+            case "radio":
+              // se for Radio button, pego o Value pelo nome selecionado, e adciono TRUE
+              field = formUpdate.querySelector(
+                "[name=" + key.replace("_", "") + "][value=" + jSon[key] + "]"
+              );
+              field.checked = true;
+              break;
+            case "checkbox":
+               field.checked = jSon[key];
+            break;
+            default: 
+            field.value = jSon[key];
+
+          }
+        }
+      }
+    }
+    this.showPanelUpdate();
+  });
+
+ }
+
+
 
   /**Pegando o Botão Edite os Style da div */
   showPanelCreate() {
