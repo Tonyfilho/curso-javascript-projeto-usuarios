@@ -36,37 +36,60 @@ class UserController {
       //**Passando o Index da TD capturada na tr.dataset.trIndex para.. e passando para TR da tabela na linha 38*/
       let index = this.formUpdateEL.dataset.trIndex;
       let tr = this.tableEL.rows[index];
-      tr.dataset.user = JSON.stringify(valueUserUpdate);
-      /**Mudando a TR com os valores Add para Update, usando InnerHTML */
-      tr.innerHTML = ` 
-     <td>
-       <img
-         src="${valueUserUpdate.photo}"
-         alt="User Image"
-         class="img-circle img-sm"
-       />
-     </td>
-     <td>${valueUserUpdate.name}</td>
-     <td>${valueUserUpdate.email}</td>
-     <td>${valueUserUpdate.admin ? "Yes" : "No"}</td>
-     <td>${Utils.dateFormat(valueUserUpdate.register)}</td>
-     <td>
-       <button
-         type="button"
-         class="btn btn-primary btn-edit btn-xs btn-flat"
-       >
-         Editar
-       </button>
-       <button
-         type="button"
-         class="btn btn-danger btn-xs btn-flat"
-       >
-         Excluir
-       </button>
-     </td>
-   `;
-   this.addEventsTR(tr);
-   this.updateCount();
+      /**Vamos substituir o Objeto atual q tem a voto, pelo Objeto do Update,
+       * para isto guardaremos o antigo em uma foto e usaremos  Objecto.assign() para juntar
+       * os Objetos e substituir o antigo pelo novo
+       */
+      let userOld = JSON.parse(tr.dataset.user);
+      let result = Object.assign({}, userOld, valueUserUpdate);
+      // console.log(result);
+       
+      this.getPhotoWithPromise(this.formUpdateEL).then(
+        (resultPhoto) => {
+          if (!valueUserUpdate.photo) {
+            result._photo = userOld._photo;
+          } else {
+            result._photo = resultPhoto;
+          }
+          tr.dataset.user = JSON.stringify(result);
+          /**Mudando a TR com os valores Add para Update, usando InnerHTML */
+          tr.innerHTML = ` 
+          <td>
+            <img
+              src="${result._photo}"
+              alt="User Image"
+              class="img-circle img-sm"
+            />
+          </td>
+          <td>${result._name}</td>
+          <td>${result._email}</td>
+          <td>${result._admin ? "Yes" : "No"}</td>
+          <td>${Utils.dateFormat(result._register)}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-primary btn-edit btn-xs btn-flat"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger btn-xs btn-flat"
+            >
+              Excluir
+            </button>
+          </td>
+        `;
+          this.addEventsTR(tr);
+          this.updateCount();
+          this.formUpdateEL.reset();
+          btn.disabled = false;
+          this.showPanelCreate();
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
     });
   }
 
@@ -88,7 +111,7 @@ class UserController {
       //   this.getPhoto((photo) => {user.photo = photo
       //     this.addLine(user);
       // });
-      this.getPhotoWithPromise().then(
+      this.getPhotoWithPromise(this.formEL).then(
         (resultPhoto) => {
           user.photo = resultPhoto;
           this.addLine(user);
@@ -123,13 +146,13 @@ class UserController {
   }
 
   /** ****************************************Metodo para leitura de Arquivos vindo do PC usando PROMISES*/
-  getPhotoWithPromise() {
+  getPhotoWithPromise(formEL) {
     const fileReader = new FileReader();
     let elementPhoto;
     let photoFile;
     return new Promise((resolve, reject) => {
       /**Pegando o campo da foto usando Spread e filter e ternario */
-      [...this.formEL.elements].filter((element) => {
+      [...formEL.elements].filter((element) => {
         element.name == "photo" ? (elementPhoto = element) : null;
       });
       /**Pegando a Foto no Input e pondo em uma Var, Lembrando que Files é um Array de fotos, onde queremos o indice 0 */
@@ -156,7 +179,7 @@ class UserController {
   getValues(formEL) {
     let user = {};
     let isValid = true;
-    //usando Spread para Ler uma ELEMENTO Html [...this.blabla]
+    //usando Spread para Ler uma ELEMENTO Html [...blabla]
     [...formEL.elements].forEach((field) => {
       /*Criando o Objeto User form-control is-invalid
             O Gender é um SELECT, temos que checar quais as opcoes escolhidas*/
@@ -236,51 +259,50 @@ class UserController {
     this.tableEL.appendChild(tr);
     this.updateCount();
   }
- /**************************Evento da TR************************ */
- addEventsTR(tr) {
-  /**Pegando o Botão Edite pela class */
-  let jSon;
-  let formUpdate;
-  tr.querySelector(".btn-edit").addEventListener("click", (e) => {
-    jSon = JSON.parse(tr.dataset.user);
-    formUpdate = document.querySelector("#form-user-update");
-    /**Pegando Index da ROW da TR no momento do click */
-    formUpdate.dataset.trIndex =  tr.sectionRowIndex
+  /**************************Evento da TR************************ */
+  addEventsTR(tr) {
+    /**Pegando o Botão Edite pela class */
+    let jSon;
+    // let formUpdate;
+    tr.querySelector(".btn-edit").addEventListener("click", (e) => {
+      jSon = JSON.parse(tr.dataset.user);
+      // formUpdate = document.querySelector("#form-user-update");
 
-    for (const key in jSon) {
-      if (Object.hasOwnProperty.call(jSon, key)) {
-        // const element = jSon[key];
-        let field = formUpdate.querySelector(
-          "[name=" + key.replace("_", "") + "]"
-        );
-        if (field) {
-          switch (field.type) {
-            case "file":
-              continue;
-              break;
-            case "radio":
-              // se for Radio button, pego o Value pelo nome selecionado, e adciono TRUE
-              field = formUpdate.querySelector(
-                "[name=" + key.replace("_", "") + "][value=" + jSon[key] + "]"
-              );
-              field.checked = true;
-              break;
-            case "checkbox":
-               field.checked = jSon[key];
-            break;
-            default: 
-            field.value = jSon[key];
+      /**Pegando Index da ROW da TR no momento do click */
+      this.formUpdateEL.dataset.trIndex = tr.sectionRowIndex;
 
+      for (const key in jSon) {
+        if (Object.hasOwnProperty.call(jSon, key)) {
+          // const element = jSon[key];
+          let field = this.formUpdateEL.querySelector(
+            "[name=" + key.replace("_", "") + "]"
+          );
+          if (field) {
+            switch (field.type) {
+              case "file":
+                continue;
+                break;
+              case "radio":
+                // se for Radio button, pego o Value pelo nome selecionado, e adciono TRUE
+                field = this.formUpdateEL.querySelector(
+                  "[name=" + key.replace("_", "") + "][value=" + jSon[key] + "]"
+                );
+                field.checked = true;
+                break;
+              case "checkbox":
+                field.checked = jSon[key];
+                break;
+              default:
+                field.value = jSon[key];
+            }
           }
         }
       }
-    }
-    this.showPanelUpdate();
-  });
-
- }
-
-
+      /**Pegando o campo Photo pela class no form Update, e trocar o atributo SRC */
+      this.formUpdateEL.querySelector(".photo").src = jSon._photo;
+      this.showPanelUpdate();
+    });
+  }
 
   /**Pegando o Botão Edite os Style da div */
   showPanelCreate() {
