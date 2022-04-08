@@ -248,7 +248,7 @@ class UserController {
       </button>
       <button
         type="button"
-        class="btn btn-danger btn-xs btn-flat"
+        class="btn btn-danger btn-delete btn-xs btn-flat"
       >
         Excluir
       </button>
@@ -261,6 +261,8 @@ class UserController {
   }
   /**************************Evento da TR************************ */
   addEventsTR(tr) {
+    /**Caso hava um evento no botão Delete() este metodo é acionado. */
+    this.deleteTr(tr);
     /**Pegando o Botão Edite pela class */
     let jSon;
     // let formUpdate;
@@ -302,6 +304,18 @@ class UserController {
       this.formUpdateEL.querySelector(".photo").src = jSon._photo;
       this.showPanelUpdate();
     });
+  }
+
+  /******************************DeleteTr  remove a linha  */
+  deleteTr(tr){
+   tr.querySelector('.btn-delete').addEventListener('click', event => {
+   if(confirm('Are you sure ??')) {
+      tr.remove();
+      this.updateCount();
+
+   }
+
+   })
   }
 
   /**Pegando o Botão Edite os Style da div */
