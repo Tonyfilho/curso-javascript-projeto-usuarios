@@ -44,7 +44,7 @@ class UserController {
       let userOld = JSON.parse(tr.dataset.user);
       let result = Object.assign({}, userOld, valueUserUpdate);
       // console.log(result);
-       
+
       this.getPhotoWithPromise(this.formUpdateEL).then(
         (resultPhoto) => {
           if (!valueUserUpdate.photo) {
@@ -52,36 +52,9 @@ class UserController {
           } else {
             result._photo = resultPhoto;
           }
-          tr.dataset.user = JSON.stringify(result);
-          /**Mudando a TR com os valores Add para Update, usando InnerHTML */
-          tr.innerHTML = ` 
-          <td>
-            <img
-              src="${result._photo}"
-              alt="User Image"
-              class="img-circle img-sm"
-            />
-          </td>
-          <td>${result._name}</td>
-          <td>${result._email}</td>
-          <td>${result._admin ? "Yes" : "No"}</td>
-          <td>${Utils.dateFormat(result._register)}</td>
-          <td>
-            <button
-              type="button"
-              class="btn btn-primary btn-edit btn-xs btn-flat"
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger btn-xs btn-flat"
-            >
-              Excluir
-            </button>
-          </td>
-        `;
-          this.addEventsTR(tr);
+          let user = new User();
+          user.loadFromJSON(result);
+          this.getTr(user, tr);        
           this.updateCount();
           this.formUpdateEL.reset();
           btn.disabled = false;
@@ -225,34 +198,39 @@ class UserController {
     /** O SessionStorige devolve uma STRING e não Objeto, Então tem q ser criado um OBJETO**/
     // o Set() recebe 2 paramentros, uma Key: e um Valor.
     // if (sessionStorage.getItem('users')) {
-    if (localStorage.getItem('users')) {
-      users = JSON.parse(localStorage.getItem('users'));
-          
+    if (localStorage.getItem("users")) {
+      users = JSON.parse(localStorage.getItem("users"));
     }
     return users;
   }
   /***************Seleciona todo os Users do Store  */
-  selectAll(){
+  selectAll() {
     let users = this.getUserStorage();
-    users.forEach(dataUser => {
-     let user = new User();
-     user.loadFromJSON(dataUser);
-     this.addLine(user);
+    users.forEach((dataUser) => {
+      let user = new User();
+      user.loadFromJSON(dataUser);
+      this.addLine(user);
     });
-
   }
   /**********************Insert(), pega os dados  SecctionStorige ou LocalStorage*/
-  insert(dataUser){
+  insert(dataUser) {
     let users = this.getUserStorage();
-    users.push(dataUser);// passamos uma Array por se tratar de um Objeto com mais de uma KEY
+    users.push(dataUser); // passamos uma Array por se tratar de um Objeto com mais de uma KEY
     // sessioStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('users', JSON.stringify(users));
-
-  
-  } 
+    localStorage.setItem("users", JSON.stringify(users));
+  }
   /* Metodo q  adciona USUÁRIOS na TABLE exibida */
   addLine(dataUser) {
-    const tr = document.createElement("tr");
+    const tr = this.getTr(dataUser);
+    /** AppendChild adciona o Element TR na tabela */
+    this.tableEL.appendChild(tr);
+    this.updateCount();
+  }
+  /*******************************GetTR cria a Tr na tabela */
+  getTr(dataUser, tr = null) {
+    if (tr === null) {
+      tr = document.createElement("tr");
+    }
     tr.dataset.user = JSON.stringify(dataUser); //criando um DataSet para ter acesso ao numero de admin
     // Mandando para TBody
     /**Pega o ID #"table-users" da tabela para mandar as  informações via AppendChild() */
@@ -287,9 +265,7 @@ class UserController {
     </td>
   `;
     this.addEventsTR(tr);
-    /** AppendChild adciona o Element TR na tabela */
-    this.tableEL.appendChild(tr);
-    this.updateCount();
+    return tr;
   }
   /**************************Evento da TR************************ */
   addEventsTR(tr) {
@@ -339,15 +315,13 @@ class UserController {
   }
 
   /******************************DeleteTr  remove a linha  */
-  deleteTr(tr){
-   tr.querySelector('.btn-delete').addEventListener('click', event => {
-   if(confirm('Are you sure ??')) {
-      tr.remove();
-      this.updateCount();
-
-   }
-
-   })
+  deleteTr(tr) {
+    tr.querySelector(".btn-delete").addEventListener("click", (event) => {
+      if (confirm("Are you sure ??")) {
+        tr.remove();
+        this.updateCount();
+      }
+    });
   }
 
   /**Pegando o Botão Edite os Style da div */
