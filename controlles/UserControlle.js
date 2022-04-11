@@ -224,8 +224,9 @@ class UserController {
     let users = [];
     /** O SessionStorige devolve uma STRING e não Objeto, Então tem q ser criado um OBJETO**/
     // o Set() recebe 2 paramentros, uma Key: e um Valor.
-    if (sessionStorage.getItem('users')) {
-      users = JSON.parse(sessionStorage.getItem('users'));
+    // if (sessionStorage.getItem('users')) {
+    if (localStorage.getItem('users')) {
+      users = JSON.parse(localStorage.getItem('users'));
           
     }
     return users;
@@ -240,11 +241,12 @@ class UserController {
     });
 
   }
-  /**********************Insert(), pega os dados  SecctionStorige*/
+  /**********************Insert(), pega os dados  SecctionStorige ou LocalStorage*/
   insert(dataUser){
     let users = this.getUserStorage();
     users.push(dataUser);// passamos uma Array por se tratar de um Objeto com mais de uma KEY
-    sessionStorage.setItem('users', JSON.stringify(users));
+    // sessioStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('users', JSON.stringify(users));
 
   
   } 
