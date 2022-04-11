@@ -17,6 +17,7 @@ class UserController {
     this.tableEL = document.getElementById(tableUserId);
     this.onSubmit();
     this.onEdit();
+    this.selectAll();
   }
   //***********************************************Metodo de onEditeCancel() esconde o FOrm de Editar e mostra o de Salvar
   onEdit() {
@@ -114,6 +115,7 @@ class UserController {
       this.getPhotoWithPromise(this.formEL).then(
         (resultPhoto) => {
           user.photo = resultPhoto;
+          this.insert(user);
           this.addLine(user);
           this.formEL.reset();
           btn.disabled = false;
@@ -217,7 +219,35 @@ class UserController {
       user.admin
     );
   }
+  /*******************Pega Todos os dados do Store**************** */
+  getUserStorage() {
+    let users = [];
+    /** O SessionStorige devolve uma STRING e não Objeto, Então tem q ser criado um OBJETO**/
+    // o Set() recebe 2 paramentros, uma Key: e um Valor.
+    if (sessionStorage.getItem('users')) {
+      users = JSON.parse(sessionStorage.getItem('users'));
+          
+    }
+    return users;
+  }
+  /***************Seleciona todo os Users do Store  */
+  selectAll(){
+    let users = this.getUserStorage();
+    users.forEach(dataUser => {
+     let user = new User();
+     user.loadFromJSON(dataUser);
+     this.addLine(user);
+    });
 
+  }
+  /**********************Insert(), pega os dados  SecctionStorige*/
+  insert(dataUser){
+    let users = this.getUserStorage();
+    users.push(dataUser);// passamos uma Array por se tratar de um Objeto com mais de uma KEY
+    sessionStorage.setItem('users', JSON.stringify(users));
+
+  
+  } 
   /* Metodo q  adciona USUÁRIOS na TABLE exibida */
   addLine(dataUser) {
     const tr = document.createElement("tr");
@@ -261,7 +291,7 @@ class UserController {
   }
   /**************************Evento da TR************************ */
   addEventsTR(tr) {
-    /**Caso hava um evento no botão Delete() este metodo é acionado. */
+    /**Caso haja um evento no botão Delete() este metodo é acionado. */
     this.deleteTr(tr);
     /**Pegando o Botão Edite pela class */
     let jSon;
