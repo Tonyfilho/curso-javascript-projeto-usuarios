@@ -100,12 +100,14 @@ class User {
     /**o ID por ser um Dummy terá que ser global com scopo global, para que o front tenha acesso, então vamos por ele
      * no WINDOWS, criaremos uma VAR no window chamada ID desta forma window.id
      */
-    if (!window.id) {
+    window.id;
+    if (window.id == undefined) {      
       window.id = 0;
       /**Depois da Var window.ID criada, no window, posso somente chamar lá por ID, sem precisar de usar window.id  */
-      id ++;
-      return id;      
-    } 
+    } else{      
+      window.id  = window.id + 1;
+    }
+    return window.id
   }
 
   /** O Save irá salvar no local storage do navegador */
@@ -119,9 +121,9 @@ class User {
         }
         return user;
       });
-    } else {
+    } else {      
       this.id = this.getNewId();
-      users.push(this);// o THIS aqui é todo o OBJETO da class
+      users.push(this); // o THIS aqui é todo o OBJETO da class
     }
     /**Salvando no local Storage */
     localStorage.setItem("users", JSON.stringify(users));
@@ -138,4 +140,18 @@ class User {
     }
     return users;
   }
+
+  /**********************Remove do Local Storage quando clicamo no botão de remover */
+  removeFromLocalStorage() {
+    let users = User.getUserStorage(); //Isto é um Array de Users no localStorage
+    users.forEach((userData, index) => {    
+      if (userData._id == this.id) {      
+        users.splice(index, 1);
+      }
+    });
+    /**Ápos item removido, adcionamos novamente no local storage */
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+
 }

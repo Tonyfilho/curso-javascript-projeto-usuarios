@@ -195,24 +195,15 @@ class UserController {
       user.admin
     );
   }
-  /*******************Pega Todos os dados do Store**************** */
-  getUserStorage() {
-    let users = [];
-    /** O SessionStorige devolve uma STRING e não Objeto, Então tem q ser criado um OBJETO**/
-    // o Set() recebe 2 paramentros, uma Key: e um Valor.
-    // if (sessionStorage.getItem('users')) {
-    if (localStorage.getItem("users")) {
-      users = JSON.parse(localStorage.getItem("users"));
-    }
-    return users;
-  }
+
 
   selectAll() {
-    let users = this.getUserStorage();
+    /** User.getUserStorage() é um metodo STATICO da class USER*/
+    let users = User.getUserStorage();    
     users.forEach((dataUser) => {
       let user = new User();
       user.loadFromJSON(dataUser);
-      this.addLine(user);
+      this.addLine(user); 
     });
   }
 
@@ -315,6 +306,10 @@ class UserController {
   deleteTr(tr) {
     tr.querySelector(".btn-delete").addEventListener("click", (event) => {
       if (confirm("Are you sure ??")) {
+        let user = new User();
+        user.loadFromJSON(JSON.parse(tr.dataset.user));
+        /**Adcionando o Remove vindo da instacia da class USER */
+        user.removeFromLocalStorage();
         tr.remove();
         this.updateCount();
       }
