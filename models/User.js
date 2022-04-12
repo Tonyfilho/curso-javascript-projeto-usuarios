@@ -1,5 +1,6 @@
 class User {
   constructor(name, gender, birth, country, email, password, photo, admin) {
+    this._id;
     this._name = name;
     this._gender = gender;
     this._birth = birth;
@@ -11,6 +12,12 @@ class User {
     this._register = new Date();
   }
 
+  get id() {
+    return this._id;
+  }
+  set id(id) {
+    this._id = id;
+  }
   get name() {
     return this._name;
   }
@@ -87,5 +94,48 @@ class User {
         }
       }
     }
+  }
+  /** GetNewId é um Dummy gerador de Id */
+  getNewId() {
+    /**o ID por ser um Dummy terá que ser global com scopo global, para que o front tenha acesso, então vamos por ele
+     * no WINDOWS, criaremos uma VAR no window chamada ID desta forma window.id
+     */
+    if (!window.id) {
+      window.id = 0;
+      /**Depois da Var window.ID criada, no window, posso somente chamar lá por ID, sem precisar de usar window.id  */
+      id ++;
+      return id;      
+    } 
+  }
+
+  /** O Save irá salvar no local storage do navegador */
+  saveLocalStorage() {
+    let users = User.getUserStorage();
+    if (this.id > 0) {
+      users.map((user) => {
+        if (user._id == this.id) {
+          /**Se o User que vem do controler for igual o user da instancia, meclaremos com OBJECT.ASSIGN*/
+          Object.assign(user, this);
+        }
+        return user;
+      });
+    } else {
+      this.id = this.getNewId();
+      users.push(this);// o THIS aqui é todo o OBJETO da class
+    }
+    /**Salvando no local Storage */
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  /*******************Pega Todos os dados do Store**************** */
+  static getUserStorage() {
+    let users = [];
+    /** O SessionStorage devolve uma STRING e não Objeto, Então tem q ser criado um OBJETO**/
+    // o Set() recebe 2 paramentros, uma Key: e um Valor.
+    // if (sessionStorage.getItem('users')) {
+    if (localStorage.getItem("users")) {
+      users = JSON.parse(localStorage.getItem("users"));
+    }
+    return users;
   }
 }

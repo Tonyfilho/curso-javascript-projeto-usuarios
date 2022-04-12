@@ -54,7 +54,9 @@ class UserController {
           }
           let user = new User();
           user.loadFromJSON(result);
-          this.getTr(user, tr);        
+          /**Usando a instacia do User para ter acesso ao saveLocalStorage da class User */
+          user.saveLocalStorage();
+          this.getTr(user, tr);
           this.updateCount();
           this.formUpdateEL.reset();
           btn.disabled = false;
@@ -88,7 +90,8 @@ class UserController {
       this.getPhotoWithPromise(this.formEL).then(
         (resultPhoto) => {
           user.photo = resultPhoto;
-          this.insert(user);
+          /**o let user virou instancia da class User, por causa do this.getValues(this.formEL), e com isto tem acesso ao metodo SaveLocalStorage*/
+          user.saveLocalStorage();
           this.addLine(user);
           this.formEL.reset();
           btn.disabled = false;
@@ -203,7 +206,7 @@ class UserController {
     }
     return users;
   }
-  /***************Seleciona todo os Users do Store  */
+
   selectAll() {
     let users = this.getUserStorage();
     users.forEach((dataUser) => {
@@ -212,13 +215,7 @@ class UserController {
       this.addLine(user);
     });
   }
-  /**********************Insert(), pega os dados  SecctionStorige ou LocalStorage*/
-  insert(dataUser) {
-    let users = this.getUserStorage();
-    users.push(dataUser); // passamos uma Array por se tratar de um Objeto com mais de uma KEY
-    // sessioStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem("users", JSON.stringify(users));
-  }
+
   /* Metodo q  adciona USUÁRIOS na TABLE exibida */
   addLine(dataUser) {
     const tr = this.getTr(dataUser);
